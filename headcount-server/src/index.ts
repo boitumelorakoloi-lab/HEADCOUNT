@@ -16,7 +16,7 @@ import staticRoutes            from "./routes/static";
 dotenv.config();
 
 const app  = express();
-const PORT = process.env.PORT ?? 3001;
+const PORT = process.env.PORT || 3001;
 
 app.use(cors({
   origin: ["http://localhost:5173", "http://localhost:3000","https://headcount-nine.vercel.app/"],
@@ -27,6 +27,10 @@ app.use(express.json());
 // ── Health check ─────────────────────────────────────────────
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
 
 // ── Helpers ───────────────────────────────────────────────────
