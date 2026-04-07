@@ -29,7 +29,7 @@ const PORT = parseInt(process.env.PORT || '3001', 10);
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "http://localhost:3000",
+    "http://localhost:3001",
     "https://headcount-nine.vercel.app",
     "https://headcount-p5wj8d3d5-boitumelorakoloi-labs-projects.vercel.app"
   ],
