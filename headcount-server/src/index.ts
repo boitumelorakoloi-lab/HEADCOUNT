@@ -27,12 +27,13 @@ dotenv.config();
 const app  = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "http://localhost:3001",
-    "https://headcount-nine.vercel.app",
-    "https://headcount-p5wj8d3d5-boitumelorakoloi-labs-projects.vercel.app"
-  ],
+  origin: (origin, callback) => {
+    if (!origin || origin.endsWith(".vercel.app")) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true,
 }));
 app.use(express.json());
