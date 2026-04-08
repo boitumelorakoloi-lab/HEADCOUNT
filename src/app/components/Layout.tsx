@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ThemeSettings } from './ThemeSettings';
 import {
   LayoutDashboard, BookOpen, Users, ClipboardList, FileText,
   LogOut, UserCircle, GraduationCap, GitBranch, Building2,
-  ScrollText,
+  ScrollText, Menu, X,
 } from 'lucide-react';
 
 interface NavItem {
@@ -55,6 +55,7 @@ export function Layout({ children }: LayoutProps): React.JSX.Element {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const handleLogout = (): void => {
     logout();
@@ -64,89 +65,132 @@ export function Layout({ children }: LayoutProps): React.JSX.Element {
   const role     = (user?.role as UserRole) ?? 'lecturer';
   const navItems = NAV_MAP[role] ?? lecturerNav;
 
+  const SidebarContent = () => (
+    <>
+      {/* Brand */}
+      <div className="p-5 border-b border-gray-200 dark:border-slate-800">
+        <div className="flex items-center gap-3">
+          <div
+            className="w-10 h-10 rounded-lg flex items-center justify-center shadow-sm"
+            style={{ backgroundColor: 'var(--theme-primary)' }}
+          >
+            <GraduationCap className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h1 className="font-bold text-gray-900 dark:text-white tracking-tight">HEADCOUNT</h1>
+            <p className="text-xs text-gray-400 dark:text-slate-500">NUL Attendance Management System</p>
+          </div>
+        </div>
+      </div>
+
+      {/* User info */}
+      <div className="p-4 border-b border-gray-200 dark:border-slate-800">
+        <div className="flex items-center gap-3">
+          <div
+            className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 border"
+            style={{
+              backgroundColor: 'color-mix(in srgb, var(--theme-primary) 12%, transparent)',
+              borderColor:     'color-mix(in srgb, var(--theme-primary) 25%, transparent)',
+            }}
+          >
+            <UserCircle className="w-5 h-5" style={{ color: 'var(--theme-primary)' }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{user?.name ?? 'Unknown User'}</p>
+            <p className="text-xs text-gray-500 dark:text-slate-400 capitalize">{user?.role ?? 'Guest'}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Nav */}
+      <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto" aria-label="Main navigation">
+        {navItems.map((item: NavItem) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              onClick={() => setSidebarOpen(false)}
+              aria-current={isActive ? 'page' : undefined}
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${
+                isActive
+                  ? 'text-white shadow-sm'
+                  : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white'
+              }`}
+              style={isActive ? { backgroundColor: 'var(--theme-primary)' } : undefined}
+            >
+              {item.icon}
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Footer */}
+      <div className="p-3 border-t border-gray-200 dark:border-slate-800 space-y-1.5">
+        <ThemeSettings />
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+        >
+          <LogOut className="w-5 h-5" />
+          <span>Logout</span>
+        </button>
+      </div>
+    </>
+  );
+
   return (
     <div className="flex h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
 
-      {/* Sidebar */}
-      <aside className="w-64 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 flex flex-col flex-shrink-0">
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex w-64 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 flex-col flex-shrink-0">
+        <SidebarContent />
+      </aside>
 
-        {/* Brand */}
-        <div className="p-5 border-b border-gray-200 dark:border-slate-800">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-10 h-10 rounded-lg flex items-center justify-center shadow-sm"
-              style={{ backgroundColor: 'var(--theme-primary)' }}
-            >
-              <GraduationCap className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="font-bold text-gray-900 dark:text-white tracking-tight">HEADCOUNT</h1>
-              <p className="text-xs text-gray-400 dark:text-slate-500">NUL Attendance Management System</p>
-            </div>
-          </div>
-        </div>
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
 
-        {/* User info */}
-        <div className="p-4 border-b border-gray-200 dark:border-slate-800">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 border"
-              style={{
-                backgroundColor: 'color-mix(in srgb, var(--theme-primary) 12%, transparent)',
-                borderColor:     'color-mix(in srgb, var(--theme-primary) 25%, transparent)',
-              }}
-            >
-              <UserCircle className="w-5 h-5" style={{ color: 'var(--theme-primary)' }} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 dark:text-white truncate">{user?.name ?? 'Unknown User'}</p>
-              <p className="text-xs text-gray-500 dark:text-slate-400 capitalize">{user?.role ?? 'Guest'}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Nav */}
-        <nav className="flex-1 p-3 space-y-0.5 overflow-y-auto" aria-label="Main navigation">
-          {navItems.map((item: NavItem) => {
-            const isActive = location.pathname === item.path;
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                aria-current={isActive ? 'page' : undefined}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-sm font-medium ${
-                  isActive
-                    ? 'text-white shadow-sm'
-                    : 'text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-white'
-                }`}
-                style={isActive ? { backgroundColor: 'var(--theme-primary)' } : undefined}
-              >
-                {item.icon}
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-
-        {/* Footer */}
-        <div className="p-3 border-t border-gray-200 dark:border-slate-800 space-y-1.5">
-          <ThemeSettings />
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-          >
-            <LogOut className="w-5 h-5" />
-            <span>Logout</span>
-          </button>
-        </div>
-
+      {/* Mobile drawer */}
+      <aside
+        className={`fixed top-0 left-0 h-full w-64 z-50 bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-800 flex flex-col transform transition-transform duration-300 md:hidden ${
+          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <SidebarContent />
       </aside>
 
       {/* Main content */}
-      <main className="flex-1 overflow-auto bg-slate-50 dark:bg-slate-950 text-gray-900 dark:text-white">
-        {children}
-      </main>
+      <div className="flex-1 flex flex-col overflow-hidden">
+
+        {/* Mobile topbar */}
+        <header className="md:hidden flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-800">
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(true)}
+            className="p-1 rounded-md text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <div
+            className="w-7 h-7 rounded-md flex items-center justify-center"
+            style={{ backgroundColor: 'var(--theme-primary)' }}
+          >
+            <GraduationCap className="w-4 h-4 text-white" />
+          </div>
+          <span className="font-bold text-gray-900 dark:text-white text-sm">HEADCOUNT</span>
+        </header>
+
+        <main className="flex-1 overflow-auto bg-slate-50 dark:bg-slate-950 text-gray-900 dark:text-white">
+          {children}
+        </main>
+      </div>
 
     </div>
   );
