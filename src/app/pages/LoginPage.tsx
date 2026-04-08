@@ -224,9 +224,9 @@ export function LoginPage() {
                 Demo credentials
               </p>
               <div className="text-xs space-y-1 text-gray-600 dark:text-slate-300">
-                <p><strong className="text-gray-800 dark:text-slate-100">Admin:</strong> admin@university.edu / admin123</p>
-                <p><strong className="text-gray-800 dark:text-slate-100">Lecturer:</strong> s.johnson@university.edu / lecturer123</p>
-                <p><strong className="text-gray-800 dark:text-slate-100">Student:</strong> alice@student.edu / student123</p>
+                <p><strong className="text-gray-800 dark:text-slate-100">Admin:</strong> admin2@nul.ls / 123456</p>
+                <p><strong className="text-gray-800 dark:text-slate-100">Lecturer:</strong> l.thite@nul.ls / 123456</p>
+                <p><strong className="text-gray-800 dark:text-slate-100">Student:</strong> albert@nul.ls / 123456</p>
               </div>
             </div>
           )}
