@@ -232,7 +232,7 @@ export default function CoursesPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">Credits</label>
-                  <input type="number" min={1} max={10} value={form.credits}
+                  <input type="number" min={1} max={15} value={form.credits}
                     onChange={e => setForm(prev => ({ ...prev, credits: e.target.value }))} className={inputCls} />
                 </div>
                 <div>
