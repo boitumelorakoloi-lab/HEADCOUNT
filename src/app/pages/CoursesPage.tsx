@@ -17,7 +17,10 @@ export default function CoursesPage() {
   const [form, setForm] = useState({
     name: "", code: "", description: "",
     departmentId: "", year: "1", credits: "3", maxEnrollment: "30",
+    lecturerId: "",
   });
+
+  const lecturers = useMemo(() => users.filter(u => u.role === "lecturer"), [users]);
 
   const filtered = useMemo(() => courses.filter(c => {
     const matchesSearch =
@@ -37,7 +40,7 @@ export default function CoursesPage() {
   };
 
   const openAdd = () => {
-    setForm({ name: "", code: "", description: "", departmentId: "", year: "1", credits: "3", maxEnrollment: "30" });
+    setForm({ name: "", code: "", description: "", departmentId: "", year: "1", credits: "3", maxEnrollment: "30", lecturerId: "" });
     setError(""); setModal("add");
   };
 
@@ -47,20 +50,23 @@ export default function CoursesPage() {
       name: course.name, code: course.code, description: course.description ?? "",
       departmentId: course.departmentId ?? "", year: String(course.year ?? 1),
       credits: String(course.credits ?? 3), maxEnrollment: String(course.maxEnrollment ?? 30),
+      lecturerId: course.lecturerId ?? "",
     });
     setError(""); setModal("edit");
   };
 
   const handleSave = () => {
-    if (!form.name.trim()) { setError("Course name is required."); return; }
-    if (!form.code.trim()) { setError("Course code is required."); return; }
-    if (!form.departmentId) { setError("Please select a department."); return; }
+    if (!form.name.trim())    { setError("Course name is required."); return; }
+    if (!form.code.trim())    { setError("Course code is required."); return; }
+    if (!form.departmentId)   { setError("Please select a department."); return; }
     const dept = departments.find(d => d.id === form.departmentId);
     const payload: Omit<Course, "id"> = {
       name: form.name.trim(), code: form.code.trim().toUpperCase(),
       description: form.description.trim() || undefined,
       departmentId: form.departmentId, department: dept?.name,
-      year: Number(form.year), credits: Number(form.credits), maxEnrollment: Number(form.maxEnrollment),
+      year: Number(form.year), credits: Number(form.credits),
+      maxEnrollment: Number(form.maxEnrollment),
+      lecturerId: form.lecturerId || undefined,
     };
     if (modal === "add") addCourse(payload);
     else if (modal === "edit" && selected) updateCourse(selected.id, payload);
@@ -186,6 +192,7 @@ export default function CoursesPage() {
             </div>
             <div className="p-5 space-y-3">
               {error && <p className="text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 p-2 rounded-lg">{error}</p>}
+
               {([
                 { label: "Course Name *", key: "name" as CourseFormKey,        placeholder: "Introduction to Computer Science" },
                 { label: "Course Code *", key: "code" as CourseFormKey,        placeholder: "CS1001" },
@@ -197,6 +204,7 @@ export default function CoursesPage() {
                     placeholder={placeholder} className={inputCls} />
                 </div>
               ))}
+
               <div>
                 <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">Department *</label>
                 <select value={form.departmentId} onChange={e => setForm(prev => ({ ...prev, departmentId: e.target.value }))} className={inputCls}>
@@ -204,6 +212,17 @@ export default function CoursesPage() {
                   {departments.map(d => <option key={d.id} value={d.id} className="bg-white dark:bg-slate-900">{d.name}</option>)}
                 </select>
               </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">Assign Lecturer</label>
+                <select value={form.lecturerId} onChange={e => setForm(prev => ({ ...prev, lecturerId: e.target.value }))} className={inputCls}>
+                  <option value="" className="bg-white dark:bg-slate-900">-- No lecturer --</option>
+                  {lecturers.map(l => (
+                    <option key={l.id} value={l.id} className="bg-white dark:bg-slate-900">{l.name}</option>
+                  ))}
+                </select>
+              </div>
+
               <div className="grid grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 dark:text-slate-300 mb-1">Year</label>

@@ -1,13 +1,9 @@
-// src/routes/courses.ts
 import { Router, Response } from "express";
 import prisma from "../lib/prisma";
 import { authenticate, adminOnly, AuthRequest } from "../middleware/auth";
-
 const router = Router();
-
 router.use(authenticate);
 
-// ── GET /api/courses ─────────────────────────────── all roles
 router.get("/", async (_req: AuthRequest, res: Response) => {
   try {
     const courses = await prisma.course.findMany({
@@ -20,13 +16,17 @@ router.get("/", async (_req: AuthRequest, res: Response) => {
   }
 });
 
-// ── POST /api/courses ────────────────────────────── admin only
 router.post("/", adminOnly, async (req: AuthRequest, res: Response) => {
-  const { name, code, description, departmentId, year, credits, maxEnrollment } = req.body;
+  const { name, code, description, departmentId, year, credits, maxEnrollment, lecturerId } = req.body;
   if (!name || !code) { res.status(400).json({ error: "Name and code are required" }); return; }
   try {
     const course = await prisma.course.create({
-      data: { name, code: code.toUpperCase(), description, departmentId, year: Number(year), credits: Number(credits), maxEnrollment: Number(maxEnrollment) },
+      data: {
+        name, code: code.toUpperCase(), description, departmentId,
+        year: Number(year), credits: Number(credits),
+        maxEnrollment: Number(maxEnrollment),
+        ...(lecturerId && { lecturerId }),
+      },
       include: { department: true },
     });
     res.status(201).json(formatCourse(course));
@@ -35,20 +35,20 @@ router.post("/", adminOnly, async (req: AuthRequest, res: Response) => {
   }
 });
 
-// ── PUT /api/courses/:id ─────────────────────────── admin only
 router.put("/:id", adminOnly, async (req: AuthRequest, res: Response) => {
-  const { name, code, description, departmentId, year, credits, maxEnrollment } = req.body;
+  const { name, code, description, departmentId, year, credits, maxEnrollment, lecturerId } = req.body;
   try {
     const course = await prisma.course.update({
       where: { id: req.params.id },
       data: {
-        ...(name         && { name }),
-        ...(code         && { code: code.toUpperCase() }),
-        ...(description  !== undefined && { description }),
-        ...(departmentId && { departmentId }),
-        ...(year         && { year: Number(year) }),
-        ...(credits      && { credits: Number(credits) }),
+        ...(name          && { name }),
+        ...(code          && { code: code.toUpperCase() }),
+        ...(description   !== undefined && { description }),
+        ...(departmentId  && { departmentId }),
+        ...(year          && { year: Number(year) }),
+        ...(credits       && { credits: Number(credits) }),
         ...(maxEnrollment && { maxEnrollment: Number(maxEnrollment) }),
+        ...(lecturerId !== undefined && { lecturerId: lecturerId || null }),
       },
       include: { department: true },
     });
@@ -58,7 +58,6 @@ router.put("/:id", adminOnly, async (req: AuthRequest, res: Response) => {
   }
 });
 
-// ── DELETE /api/courses/:id ──────────────────────── admin only
 router.delete("/:id", adminOnly, async (req: AuthRequest, res: Response) => {
   try {
     await prisma.course.delete({ where: { id: req.params.id } });
@@ -70,15 +69,16 @@ router.delete("/:id", adminOnly, async (req: AuthRequest, res: Response) => {
 
 function formatCourse(course: any) {
   return {
-    id:           course.id,
-    name:         course.name,
-    code:         course.code,
-    description:  course.description,
-    departmentId: course.departmentId,
-    department:   course.department?.name,
-    year:         course.year,
-    credits:      course.credits,
+    id:            course.id,
+    name:          course.name,
+    code:          course.code,
+    description:   course.description,
+    departmentId:  course.departmentId,
+    department:    course.department?.name,
+    year:          course.year,
+    credits:       course.credits,
     maxEnrollment: course.maxEnrollment,
+    lecturerId:    course.lecturerId ?? undefined,
   };
 }
 
