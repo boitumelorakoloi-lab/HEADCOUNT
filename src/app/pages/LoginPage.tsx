@@ -224,9 +224,9 @@ export function LoginPage() {
                 Demo credentials
               </p>
               <div className="text-xs space-y-1 text-gray-600 dark:text-slate-300">
-                <p><strong className="text-gray-800 dark:text-slate-100">NO MALICIOUS ACTIVITIES WILL BE TOLERATED</p>
-                <p><strong className="text-gray-800 dark:text-slate-100">PLEASE!</p>
-                <p><strong className="text-gray-800 dark:text-slate-100">OWEE! ONLY REGISTER AS A STUDENT</p>
+                <p><strong className="text-gray-800 dark:text-slate-100"></strong>NO MALICIOUS ACTIVITIES WILL BE TOLERATED</p>
+                <p><strong className="text-gray-800 dark:text-slate-100"></strong>PLEASE!</p>
+                <p><strong className="text-gray-800 dark:text-slate-100"></strong>OWEE! ONLY REGISTER AS A STUDENT</p>
               </div>
             </div>
           )}
