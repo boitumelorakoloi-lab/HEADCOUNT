@@ -20,28 +20,24 @@ function Root() {
   if (!ready) return <LoadingPage />;
 
   return (
-    <>
-      <Outlet />
-      <Toaster />
-    </>
+    <AuthProvider>
+      <ThemeProvider>
+        <LogProvider>
+          <DataProvider>
+            <ClassSessionProvider>
+              <Outlet />
+              <Toaster />
+            </ClassSessionProvider>
+          </DataProvider>
+        </LogProvider>
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
 
 const router = createBrowserRouter([
   {
-    element: (
-      <AuthProvider>
-        <ThemeProvider>
-          <LogProvider>
-            <DataProvider>
-              <ClassSessionProvider>
-                <Root />
-              </ClassSessionProvider>
-            </DataProvider>
-          </LogProvider>
-        </ThemeProvider>
-      </AuthProvider>
-    ),
+    element: <Root />,
     children: routes,
   },
 ]);
