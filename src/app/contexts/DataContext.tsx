@@ -44,9 +44,9 @@ export interface Course {
   credits?: number;
   lecturerId?: string;
   maxEnrollment?: number;
-  semester?: "A" | "B";     // which semester this course runs in
-  isOpenYear?: boolean;      // cross-year special case: any year can enroll
-  isMultiDept?: boolean;     // cross-dept special case: students outside dept can enroll
+  semester?: "A" | "B";
+  isOpenYear?: boolean;
+  isMultiDept?: boolean;
 }
 
 export interface AttendanceRecord {
@@ -100,12 +100,12 @@ const DataContext = createContext<DataContextValue | null>(null);
 export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   const { token, user: authUser, updateCurrentUser } = useAuth();
 
-  const [users, setUsers]                   = useState<User[]>([]);
-  const [courses, setCourses]               = useState<Course[]>([]);
-  const [attendance, setAttendance]         = useState<AttendanceRecord[]>([]);
-  const [departments, setDepartments]       = useState<Department[]>([]);
-  const [programmes, setProgrammes]         = useState<Programme[]>([]);
-  const [loading, setLoading]               = useState(true);
+  const [users, setUsers]                        = useState<User[]>([]);
+  const [courses, setCourses]                    = useState<Course[]>([]);
+  const [attendance, setAttendance]              = useState<AttendanceRecord[]>([]);
+  const [departments, setDepartments]            = useState<Department[]>([]);
+  const [programmes, setProgrammes]              = useState<Programme[]>([]);
+  const [loading, setLoading]                    = useState(true);
   const [activeSemester, setActiveSemesterState] = useState<"A" | "B">("A");
 
   const publicFetch = useCallback(async (path: string) => {
@@ -142,16 +142,6 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
         setDepartments(d);
         setProgrammes(normaliseProgrammes(p));
         setCourses(c);
-
-        // Load active semester (public — anyone can read)
-        try {
-          const s = await fetch(`${API}/settings/semester`);
-          if (s.ok) {
-            const data = await s.json();
-            setActiveSemesterState(data.semester ?? "A");
-          }
-        } catch { /* default A is fine */ }
-
       } catch (e) {
         console.error("Failed to load public data:", e);
       } finally {
@@ -201,7 +191,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     load();
   }, [token, authUser?.id]);
 
-  // ── Semester ─────────────────────────────────────────────────
+  // ── Semester ──────────────────────────────────────────────────
 
   const setActiveSemester = useCallback(async (semester: "A" | "B") => {
     await apiFetch("/settings/semester", {
