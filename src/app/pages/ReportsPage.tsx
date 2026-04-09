@@ -1,3 +1,18 @@
+import { useState, useMemo, useRef } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+import { useData } from '../contexts/DataContext';
+import { useLog } from '../contexts/LogContext';
+import { Button } from '../components/ui/button';
+import { Label } from '../components/ui/label';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '../components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from '../components/ui/table';
+import { Download, BookOpen, TrendingUp, Eye, X, Printer } from 'lucide-react';
+import { format } from 'date-fns';
 export function ReportsPage() {
   const { user }                       = useAuth();
   const { courses, users, attendance } = useData();
