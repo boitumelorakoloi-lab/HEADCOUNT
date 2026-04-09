@@ -91,13 +91,15 @@ export default function StudentsPage() {
   };
 
    const relevantCourses = useMemo(() => {
-    if (!selected) return courses;
-      return courses.filter(c => {
-        const deptMatch = c.departmentId === selected.departmentId || c.isMultiDept;
-        const yearMatch = c.year === selected.yearOfStudy || c.isOpenYear;
-        return deptMatch && yearMatch;
-     });
-    }, [selected, courses]);
+      if (!selected) return courses;
+          const prog = programmes.find(p => p.id === selected.programmeId);
+          const deptIds = prog?.departmentIds ?? (selected.departmentId ? [selected.departmentId] : []);
+          return courses.filter(c => {
+            const deptMatch = deptIds.includes(c.departmentId ?? "") || c.isMultiDept;
+            const yearMatch = c.year === selected.yearOfStudy || c.isOpenYear;
+            return deptMatch && yearMatch;
+         });
+        }, [selected, courses, programmes]);
 
   return (
     <div className="space-y-5 p-6">
