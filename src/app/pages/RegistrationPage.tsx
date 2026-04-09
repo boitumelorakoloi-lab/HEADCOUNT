@@ -50,12 +50,17 @@ export default function RegistrationPage() {
     [departments, studentDepartmentId]
   );
 
-  const availableCourses = useMemo(() => {
+ const programmeDeptIds = useMemo(() => {
+  if (!selectedProgramme) return [];
+  return selectedProgramme.departmentIds ?? [];
+}, [selectedProgramme]);
+
+const availableCourses = useMemo(() => {
   if (form.role === "student") {
-    if (!studentDepartmentId || !form.yearOfStudy) return [];
+    if (!programmeDeptIds.length || !form.yearOfStudy) return [];
     const year = Number(form.yearOfStudy);
     return courses.filter(c => {
-      const deptMatch = c.departmentId === studentDepartmentId || c.isMultiDept;
+      const deptMatch = programmeDeptIds.includes(c.departmentId ?? "") || c.isMultiDept;
       const yearMatch = c.year === year || c.isOpenYear;
       return deptMatch && yearMatch;
     });
@@ -65,7 +70,7 @@ export default function RegistrationPage() {
     return courses.filter(c => c.departmentId === form.departmentId || c.isMultiDept);
   }
   return [];
-}, [form.role, form.yearOfStudy, form.departmentId, studentDepartmentId, courses]);
+}, [form.role, form.yearOfStudy, form.departmentId, programmeDeptIds, courses]);
 
   const coursesByYear = useMemo(() => {
     const map: Record<number, typeof courses> = {};
@@ -291,7 +296,11 @@ export default function RegistrationPage() {
                 </h2>
                {form.role === "student" && (
                 <p className="text-xs text-gray-500 dark:text-slate-400">
-                Showing courses for <strong className="text-gray-700 dark:text-slate-200">{studentDepartment?.name}</strong> · <strong className="text-gray-700 dark:text-slate-200">Year {form.yearOfStudy}</strong> — including cross-year and multi-department courses
+                  Showing courses for{" "}
+                  <strong className="text-gray-700 dark:text-slate-200">
+                    {programmeDeptIds.map(id => departments.find(d => d.id === id)?.name).filter(Boolean).join(" & ")}
+                  </strong>{" "}
+                  · <strong className="text-gray-700 dark:text-slate-200">Year {form.yearOfStudy}</strong> — including cross-year and multi-dept courses
                 </p>
                 )}
                 {form.role === "lecturer" && (
