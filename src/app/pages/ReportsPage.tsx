@@ -1,3 +1,4 @@
+import { ReportTemplate } from '../components/ReportTemplate';
 import { useState, useMemo, useRef } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useData } from '../contexts/DataContext';
