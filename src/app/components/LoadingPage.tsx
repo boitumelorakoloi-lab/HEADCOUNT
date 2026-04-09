@@ -20,7 +20,7 @@ export function LoadingPage() {
         .loading-dots  { animation: fade-up 0.6s ease forwards; animation-delay: 0.5s; opacity: 0; }
         .dot {
           display: inline-block; width: 6px; height: 6px; border-radius: 50%;
-          margin: 0 3px; background-color: #4f46e5;
+          margin: 0 3px; background-color: var(--theme-primary, #4f46e5);
           animation: dot-bounce 1.4s ease-in-out infinite;
         }
         .dot:nth-child(2) { animation-delay: 0.2s; }
@@ -29,7 +29,10 @@ export function LoadingPage() {
 
       {/* Icon */}
       <div className="loading-icon mb-6">
-        <div className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg bg-indigo-600">
+        <div
+          className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg"
+          style={{ backgroundColor: 'var(--theme-primary, #4f46e5)' }}
+        >
           <svg
             viewBox="0 0 24 24" fill="none"
             className="w-11 h-11 text-white"
