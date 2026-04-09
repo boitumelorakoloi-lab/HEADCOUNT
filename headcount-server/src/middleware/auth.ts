@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-// Update the interface to include the 'user' object expected by your routes
 export interface AuthRequest extends Request {
   userId?: string;
   userRole?: string;
@@ -22,11 +21,11 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string; role: string };
     
-    // Set individual properties (for legacy support)
-    req.userId   = decoded.userId;
+    // Legacy support
+    req.userId = decoded.userId;
     req.userRole = decoded.role;
 
-    // Set the 'user' object (to fix the TS2339 build error)
+    // Fixes the TS2339 error in routes
     req.user = {
       id: decoded.userId,
       role: decoded.role,
@@ -39,20 +38,9 @@ export const authenticate = (req: AuthRequest, res: Response, next: NextFunction
 };
 
 export const adminOnly = (req: AuthRequest, res: Response, next: NextFunction) => {
-  // Check both userRole and user.role for safety
   const role = req.user?.role || req.userRole;
   if (role !== "admin") {
     res.status(403).json({ error: "Admin access required" });
-    return;
-  }
-  next();
-};
-
-// Added helper for lecturers or admins
-export const facultyOnly = (req: AuthRequest, res: Response, next: NextFunction) => {
-  const role = req.user?.role || req.userRole;
-  if (role !== "lecturer" && role !== "admin") {
-    res.status(403).json({ error: "Faculty or Admin access required" });
     return;
   }
   next();
