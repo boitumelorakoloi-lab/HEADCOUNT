@@ -12,7 +12,7 @@ export interface Department {
 export interface Programme {
   id: string;
   name: string;
-  departmentIds: string[];   // ← was: departmentId: string
+  departmentIds: string[];
 }
 
 export interface User {
@@ -44,6 +44,9 @@ export interface Course {
   credits?: number;
   lecturerId?: string;
   maxEnrollment?: number;
+  semester?: "A" | "B";     // which semester this course runs in
+  isOpenYear?: boolean;      // cross-year special case: any year can enroll
+  isMultiDept?: boolean;     // cross-dept special case: students outside dept can enroll
 }
 
 export interface AttendanceRecord {
@@ -62,6 +65,8 @@ interface DataContextValue {
   departments: Department[];
   programmes: Programme[];
   loading: boolean;
+  activeSemester: "A" | "B";
+  setActiveSemester: (s: "A" | "B") => Promise<void>;
   addUser: (user: Omit<User, "id">, courseIds?: string[]) => Promise<User>;
   updateUser: (id: string, updates: Partial<User>) => Promise<void>;
   deleteUser: (id: string) => Promise<void>;
@@ -77,8 +82,8 @@ interface DataContextValue {
   addDepartment: (name: string) => Promise<Department>;
   updateDepartment: (id: string, name: string) => Promise<void>;
   deleteDepartment: (id: string) => Promise<void>;
-  addProgramme: (name: string, departmentIds: string[]) => Promise<Programme>;      // ← updated
-  updateProgramme: (id: string, name: string, departmentIds: string[]) => Promise<void>; // ← updated
+  addProgramme: (name: string, departmentIds: string[]) => Promise<Programme>;
+  updateProgramme: (id: string, name: string, departmentIds: string[]) => Promise<void>;
   deleteProgramme: (id: string) => Promise<void>;
   addAttendance: (record: Omit<AttendanceRecord, "id">) => Promise<void>;
   updateAttendance: (id: string, updates: Partial<AttendanceRecord>) => Promise<void>;
@@ -95,12 +100,13 @@ const DataContext = createContext<DataContextValue | null>(null);
 export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   const { token, user: authUser, updateCurrentUser } = useAuth();
 
-  const [users, setUsers]             = useState<User[]>([]);
-  const [courses, setCourses]         = useState<Course[]>([]);
-  const [attendance, setAttendance]   = useState<AttendanceRecord[]>([]);
-  const [departments, setDepartments] = useState<Department[]>([]);
-  const [programmes, setProgrammes]   = useState<Programme[]>([]);
-  const [loading, setLoading]         = useState(true);
+  const [users, setUsers]                   = useState<User[]>([]);
+  const [courses, setCourses]               = useState<Course[]>([]);
+  const [attendance, setAttendance]         = useState<AttendanceRecord[]>([]);
+  const [departments, setDepartments]       = useState<Department[]>([]);
+  const [programmes, setProgrammes]         = useState<Programme[]>([]);
+  const [loading, setLoading]               = useState(true);
+  const [activeSemester, setActiveSemesterState] = useState<"A" | "B">("A");
 
   const publicFetch = useCallback(async (path: string) => {
     const res = await fetch(`${API}${path}`);
@@ -124,7 +130,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     return res.json();
   }, [token]);
 
-  // Load public data on mount (for registration page)
+  // Load public data on mount
   useEffect(() => {
     const loadPublic = async () => {
       try {
@@ -136,6 +142,16 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
         setDepartments(d);
         setProgrammes(normaliseProgrammes(p));
         setCourses(c);
+
+        // Load active semester (public — anyone can read)
+        try {
+          const s = await fetch(`${API}/settings/semester`);
+          if (s.ok) {
+            const data = await s.json();
+            setActiveSemesterState(data.semester ?? "A");
+          }
+        } catch { /* default A is fine */ }
+
       } catch (e) {
         console.error("Failed to load public data:", e);
       } finally {
@@ -152,14 +168,16 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     const load = async () => {
       setLoading(true);
       try {
-        const [c, d, p] = await Promise.all([
+        const [c, d, p, sem] = await Promise.all([
           apiFetch("/courses"),
           apiFetch("/departments"),
           apiFetch("/programmes"),
+          apiFetch("/settings/semester"),
         ]);
         setCourses(c);
         setDepartments(d);
         setProgrammes(normaliseProgrammes(p));
+        setActiveSemesterState(sem.semester ?? "A");
 
         if (authUser.role === "admin" || authUser.role === "lecturer") {
           const [u, a] = await Promise.all([
@@ -183,7 +201,17 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     load();
   }, [token, authUser?.id]);
 
-  // ── Users ────────────────────────────────────────────────────
+  // ── Semester ─────────────────────────────────────────────────
+
+  const setActiveSemester = useCallback(async (semester: "A" | "B") => {
+    await apiFetch("/settings/semester", {
+      method: "PUT",
+      body: JSON.stringify({ semester }),
+    });
+    setActiveSemesterState(semester);
+  }, [apiFetch]);
+
+  // ── Users ─────────────────────────────────────────────────────
 
   const addUser = useCallback(async (userData: Omit<User, "id">, courseIds?: string[]): Promise<User> => {
     const data = await apiFetch("/auth/register", {
@@ -222,7 +250,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     [courses]
   );
 
-  // ── Enrollment ───────────────────────────────────────────────
+  // ── Enrollment ────────────────────────────────────────────────
 
   const enrollStudentInCourse = useCallback(async (studentId: string, courseId: string): Promise<boolean> => {
     try {
@@ -288,7 +316,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [apiFetch, authUser, updateCurrentUser]);
 
-  // ── Courses ──────────────────────────────────────────────────
+  // ── Courses ───────────────────────────────────────────────────
 
   const addCourse = useCallback(async (courseData: Omit<Course, "id">): Promise<Course> => {
     const course = await apiFetch("/courses", {
@@ -312,7 +340,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     setCourses(prev => prev.filter(c => c.id !== id));
   }, [apiFetch]);
 
-  // ── Departments ──────────────────────────────────────────────
+  // ── Departments ───────────────────────────────────────────────
 
   const addDepartment = useCallback(async (name: string): Promise<Department> => {
     const dept = await apiFetch("/departments", {
@@ -336,7 +364,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     setDepartments(prev => prev.filter(d => d.id !== id));
   }, [apiFetch]);
 
-  // ── Programmes ───────────────────────────────────────────────
+  // ── Programmes ────────────────────────────────────────────────
 
   const addProgramme = useCallback(async (name: string, departmentIds: string[]): Promise<Programme> => {
     const prog = await apiFetch("/programmes", {
@@ -360,7 +388,7 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
     setProgrammes(prev => prev.filter(p => p.id !== id));
   }, [apiFetch]);
 
-  // ── Attendance ───────────────────────────────────────────────
+  // ── Attendance ────────────────────────────────────────────────
 
   const addAttendance = useCallback(async (record: Omit<AttendanceRecord, "id">) => {
     const created = await apiFetch("/attendance", {
@@ -391,25 +419,23 @@ export const DataProvider = ({ children }: { children: React.ReactNode }) => {
   const getAttendanceSummary = useCallback((studentUserId: string) => {
     const student = users.find(u => u.id === studentUserId);
     return (student?.enrolledCourses ?? []).map(courseId => {
-      const course   = courses.find(c => c.id === courseId);
-      const records  = attendance.filter(a => a.studentId === studentUserId && a.courseId === courseId);
-      const present  = records.filter(r => r.status === "present").length;
-      const absent   = records.filter(r => r.status === "absent").length;
-      const late     = records.filter(r => r.status === "late").length;
-      const total    = records.length;
+      const course     = courses.find(c => c.id === courseId);
+      const records    = attendance.filter(a => a.studentId === studentUserId && a.courseId === courseId);
+      const present    = records.filter(r => r.status === "present").length;
+      const absent     = records.filter(r => r.status === "absent").length;
+      const late       = records.filter(r => r.status === "late").length;
+      const total      = records.length;
       const percentage = total > 0
         ? Math.round(((present + (late * 0.5)) / total) * 100)
         : 0;
-      return {
-        courseId, courseName: course?.name ?? courseId,
-        total, present, absent, late, percentage,
-      };
+      return { courseId, courseName: course?.name ?? courseId, total, present, absent, late, percentage };
     });
   }, [users, courses, attendance]);
 
   return (
     <DataContext.Provider value={{
       users, courses, attendance, departments, programmes, loading,
+      activeSemester, setActiveSemester,
       addUser, updateUser, deleteUser, getUserById,
       getCoursesByDepartmentAndYear,
       enrollStudentInCourse, unenrollStudentFromCourse,
@@ -431,18 +457,13 @@ export const useData = (): DataContextValue => {
   return ctx;
 };
 
-// ── Helpers ──────────────────────────────────────────────────
-// Normalise API responses: old backend sends departmentId (string),
-// new backend sends departmentIds (string[]). This handles both.
 function normaliseProgramme(p: any): Programme {
   return {
     id:            p.id,
     name:          p.name,
     departmentIds: Array.isArray(p.departmentIds)
       ? p.departmentIds
-      : p.departmentId
-        ? [p.departmentId]
-        : [],
+      : p.departmentId ? [p.departmentId] : [],
   };
 }
 
