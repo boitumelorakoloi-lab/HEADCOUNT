@@ -90,12 +90,14 @@ export default function StudentsPage() {
     if (window.confirm(`Remove ${s.name}?`)) deleteUser(s.id);
   };
 
-  const relevantCourses = useMemo(() => {
-    if (!selected) return courses;
-    return courses.filter(c =>
-      c.departmentId === selected.departmentId && c.year === selected.yearOfStudy
-    );
-  }, [selected, courses]);
+   const relevantCourses = useMemo(() => {
+    if (!selected) return courses;
+      return courses.filter(c => {
+        const deptMatch = c.departmentId === selected.departmentId || c.isMultiDept;
+        const yearMatch = c.year === selected.yearOfStudy || c.isOpenYear;
+        return deptMatch && yearMatch;
+     });
+    }, [selected, courses]);
 
   return (
     <div className="space-y-5 p-6">
