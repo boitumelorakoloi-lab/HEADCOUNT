@@ -51,16 +51,21 @@ export default function RegistrationPage() {
   );
 
   const availableCourses = useMemo(() => {
-    if (form.role === "student") {
-      if (!studentDepartmentId || !form.yearOfStudy) return [];
-      return courses.filter(c => c.departmentId === studentDepartmentId && c.year === Number(form.yearOfStudy));
-    }
-    if (form.role === "lecturer") {
-      if (!form.departmentId) return [];
-      return courses.filter(c => c.departmentId === form.departmentId);
-    }
-    return [];
-  }, [form.role, form.yearOfStudy, form.departmentId, studentDepartmentId, courses]);
+  if (form.role === "student") {
+    if (!studentDepartmentId || !form.yearOfStudy) return [];
+    const year = Number(form.yearOfStudy);
+    return courses.filter(c => {
+      const deptMatch = c.departmentId === studentDepartmentId || c.isMultiDept;
+      const yearMatch = c.year === year || c.isOpenYear;
+      return deptMatch && yearMatch;
+    });
+  }
+  if (form.role === "lecturer") {
+    if (!form.departmentId) return [];
+    return courses.filter(c => c.departmentId === form.departmentId || c.isMultiDept);
+  }
+  return [];
+}, [form.role, form.yearOfStudy, form.departmentId, studentDepartmentId, courses]);
 
   const coursesByYear = useMemo(() => {
     const map: Record<number, typeof courses> = {};
@@ -284,10 +289,10 @@ export default function RegistrationPage() {
                 <h2 className="font-semibold text-gray-800 dark:text-white mb-1">
                   {form.role === "student" ? "Enroll in Courses" : "Select Courses to Teach"}
                 </h2>
-                {form.role === "student" && (
-                  <p className="text-xs text-gray-500 dark:text-slate-400">
-                    Showing <strong className="text-gray-700 dark:text-slate-200">{studentDepartment?.name}</strong> · <strong className="text-gray-700 dark:text-slate-200">Year {form.yearOfStudy}</strong> courses
-                  </p>
+               {form.role === "student" && (
+                <p className="text-xs text-gray-500 dark:text-slate-400">
+                Showing courses for <strong className="text-gray-700 dark:text-slate-200">{studentDepartment?.name}</strong> · <strong className="text-gray-700 dark:text-slate-200">Year {form.yearOfStudy}</strong> — including cross-year and multi-department courses
+                </p>
                 )}
                 {form.role === "lecturer" && (
                   <div className="flex items-start gap-2 p-2 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-lg text-xs text-amber-700 dark:text-amber-400">
