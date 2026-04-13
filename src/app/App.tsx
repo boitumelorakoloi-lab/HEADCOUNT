@@ -9,12 +9,24 @@ import { LoadingPage }          from './components/LoadingPage';
 import { routes }               from './routes';
 import { useData }              from './contexts/DataContext';
 import { useAuth }              from './contexts/AuthContext';
+import { useEffect, useState } from 'react';
 
 function LoadingGate({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
   const { loading }         = useData();
+  const [showLoader, setShowLoader] = useState(false);
 
-  if (isAuthenticated && loading) return <LoadingPage />;
+  useEffect(() => {
+    if (isAuthenticated && loading) {
+      setShowLoader(true);
+    } else if (!loading) {
+      // Small delay so the page doesn't flash
+      const t = setTimeout(() => setShowLoader(false), 300);
+      return () => clearTimeout(t);
+    }
+  }, [isAuthenticated, loading]);
+
+  if (showLoader) return <LoadingPage />;
   return <>{children}</>;
 }
 
