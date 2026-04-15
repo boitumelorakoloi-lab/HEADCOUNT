@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
+ask for my app.tsx firstimport { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import { AuthProvider }         from './contexts/AuthContext';
 import { DataProvider }         from './contexts/DataContext';
 import { LogProvider }          from './contexts/LogContext';
@@ -15,28 +15,18 @@ function LoadingGate({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
   const { loading }         = useData();
   const [showLoader, setShowLoader] = useState(false);
-
   useEffect(() => {
     if (isAuthenticated && loading) {
       setShowLoader(true);
-    }
-    if (!loading) {
+    } else if (!loading) {
+      // Small delay so the page doesn't flash
       const t = setTimeout(() => setShowLoader(false), 300);
       return () => clearTimeout(t);
     }
   }, [isAuthenticated, loading]);
-
-  // Safety: never show loader for more than 5 seconds
-  useEffect(() => {
-    if (!showLoader) return;
-    const t = setTimeout(() => setShowLoader(false), 5000);
-    return () => clearTimeout(t);
-  }, [showLoader]);
-
-  if (isAuthenticated && showLoader) return <LoadingPage />;
+  if (showLoader) return <LoadingPage />;
   return <>{children}</>;
 }
-
 function Root() {
   return (
     <AuthProvider>
@@ -55,14 +45,12 @@ function Root() {
     </AuthProvider>
   );
 }
-
 const router = createBrowserRouter([
   {
     element: <Root />,
     children: routes,
   },
 ]);
-
 export default function App() {
   return <RouterProvider router={router} />;
 }
