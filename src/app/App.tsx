@@ -1,4 +1,4 @@
-ask for my app.tsx firstimport { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Outlet } from 'react-router-dom';
 import { AuthProvider }         from './contexts/AuthContext';
 import { DataProvider }         from './contexts/DataContext';
 import { LogProvider }          from './contexts/LogContext';
@@ -15,18 +15,20 @@ function LoadingGate({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
   const { loading }         = useData();
   const [showLoader, setShowLoader] = useState(false);
+
   useEffect(() => {
     if (isAuthenticated && loading) {
       setShowLoader(true);
     } else if (!loading) {
-      // Small delay so the page doesn't flash
       const t = setTimeout(() => setShowLoader(false), 300);
       return () => clearTimeout(t);
     }
   }, [isAuthenticated, loading]);
-  if (showLoader) return <LoadingPage />;
+
+  if (isAuthenticated && showLoader) return <LoadingPage />;
   return <>{children}</>;
 }
+
 function Root() {
   return (
     <AuthProvider>
@@ -45,12 +47,14 @@ function Root() {
     </AuthProvider>
   );
 }
+
 const router = createBrowserRouter([
   {
     element: <Root />,
     children: routes,
   },
 ]);
+
 export default function App() {
   return <RouterProvider router={router} />;
 }
