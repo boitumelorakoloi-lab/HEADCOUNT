@@ -26,6 +26,13 @@ function LoadingGate({ children }: { children: React.ReactNode }) {
     }
   }, [isAuthenticated, loading]);
 
+  // Safety: never show loader for more than 5 seconds
+  useEffect(() => {
+    if (!showLoader) return;
+    const t = setTimeout(() => setShowLoader(false), 5000);
+    return () => clearTimeout(t);
+  }, [showLoader]);
+
   if (isAuthenticated && showLoader) return <LoadingPage />;
   return <>{children}</>;
 }
