@@ -11,6 +11,17 @@ import { useData }              from './contexts/DataContext';
 import { useAuth }              from './contexts/AuthContext';
 import { useEffect, useState } from 'react';
 
+export default function App() {
+  useEffect(() => {
+    const splash = document.getElementById("splash");
+    if (splash) {
+      splash.classList.add("fade");
+      setTimeout(() => splash.remove(), 400);
+    }
+  }, []);
+
+  return <RouterProvider router={router} />;
+}
 function LoadingGate({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
   const { loading }         = useData();
