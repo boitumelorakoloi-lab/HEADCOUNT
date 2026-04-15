@@ -221,13 +221,13 @@ export function LoginPage() {
           {step === 'credentials' && (
             <div className="mt-6 p-4 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700/50 rounded-lg space-y-2">
               <p className="text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">
-                Demo credentials
+                SAaLD Mini Project
               </p>
               <div className="text-xs space-y-1 text-gray-600 dark:text-slate-300">
-                <p><strong className="text-gray-800 dark:text-slate-100"></strong>202321274 Boitumelo Rakoloi</p>
-                <p><strong className="text-gray-800 dark:text-slate-100"></strong>202322596 Lineo Makhang</p>
-                <p><strong className="text-gray-800 dark:text-slate-100"></strong>202322646 Sentle Ts'ita</p>
-                <p><strong className="text-gray-800 dark:text-slate-100"></strong>202002241 Hapile Manyeli</p>
+                <p><strong className="text-gray-800 dark:text-slate-100"></strong>202322596 Lineo Makhang - Planning</p>
+                <p><strong className="text-gray-800 dark:text-slate-100"></strong>202322646 Sentle Ts'ita - Analysis</p>
+                <p><strong className="text-gray-800 dark:text-slate-100"></strong>202002241 Hapile Manyeli - Design</p>
+                <p><strong className="text-gray-800 dark:text-slate-100"></strong>202321274 Boitumelo Rakoloi - Implementation</p>
               </div>
             </div>
           )}
