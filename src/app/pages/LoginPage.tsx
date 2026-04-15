@@ -224,9 +224,10 @@ export function LoginPage() {
                 Demo credentials
               </p>
               <div className="text-xs space-y-1 text-gray-600 dark:text-slate-300">
-                <p><strong className="text-gray-800 dark:text-slate-100"></strong>NO MALICIOUS ACTIVITIES WILL BE TOLERATED</p>
-                <p><strong className="text-gray-800 dark:text-slate-100"></strong>PLEASE!</p>
-                <p><strong className="text-gray-800 dark:text-slate-100"></strong>OWEE! ONLY REGISTER AS A STUDENT</p>
+                <p><strong className="text-gray-800 dark:text-slate-100"></strong>202321274 Boitumelo Rakoloi</p>
+                <p><strong className="text-gray-800 dark:text-slate-100"></strong>202322596 Lineo Makhang</p>
+                <p><strong className="text-gray-800 dark:text-slate-100"></strong>202322646 Sentle Ts'ita</p>
+                <p><strong className="text-gray-800 dark:text-slate-100"></strong>202002241 Hapile Manyeli</p>
               </div>
             </div>
           )}
