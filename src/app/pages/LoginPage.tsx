@@ -220,8 +220,8 @@ export function LoginPage() {
           {/* Demo credentials */}
           {step === 'credentials' && (
             <div className="mt-6 p-4 bg-gray-50 dark:bg-slate-800/60 border border-gray-200 dark:border-slate-700/50 rounded-lg space-y-2">
-              <p className="text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wide">
-                SAaLD Mini Project
+              <p className="text-xs font-medium text-gray-500 dark:text-slate-400 tracking-wide">
+                SAaLD MINI PROJECT
               </p>
               <div className="text-xs space-y-1 text-gray-600 dark:text-slate-300">
                 <p><strong className="text-gray-800 dark:text-slate-100"></strong>202322596 Lineo Makhang - Planning</p>
